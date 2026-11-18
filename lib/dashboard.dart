@@ -102,12 +102,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               duration: '45 mnt',
               ingredientsCount: '6 bahan utama',
               portions: '4 Porsi',
-              isBookmarked: false,
+              isBookmarked: RecipeData.dummyRecipes[4].isBookmarked,
               onTap: () {
                 print("Inspiration Card diklik!");
               },
               onBookmarkTap: () {
                 setState(() {
+                  RecipeData.dummyRecipes[4].isBookmarked = !RecipeData.dummyRecipes[4].isBookmarked;
                 });
               },
             ),
