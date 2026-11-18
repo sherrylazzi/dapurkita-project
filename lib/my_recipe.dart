@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'components/top_navbar.dart';
 import 'components/bottom_navbar.dart';
+import 'dashboard.dart';
+import 'favorite.dart';
 
 const Color primaryRed = Color(0xFFA83211);
 const Color pageBackground = Color(0xFFFFF8F5);
@@ -469,9 +471,28 @@ class _ResepSayaScreenState extends State<ResepSayaScreen> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
+          if (index == _selectedIndex) return;
+
           setState(() {
             _selectedIndex = index;
           });
+
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const FavoriteScreen()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
+            );
+          }
         },
       ),
     );
@@ -778,9 +799,14 @@ class _ResepSayaScreenState extends State<ResepSayaScreen> {
                   fit: BoxFit.contain,
                   child: Switch(
                     value: recipe.isVisible,
-                    activeThumbColor: Colors.white,
+                    thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return Colors.white; // Warna thumb saat aktif
+                      }
+                      return Colors.white; // Warna thumb saat tidak aktif
+                    }),
+                    // Menggunakan activeTrackColor dan inactiveTrackColor yang sudah benar
                     activeTrackColor: const Color(0xFF467C53),
-                    inactiveThumbColor: Colors.white,
                     inactiveTrackColor: Colors.grey.shade300,
                     onChanged: (value) {
                       setState(() {

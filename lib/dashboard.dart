@@ -5,9 +5,11 @@ import 'components/search_bar.dart';
 import 'components/category_chips.dart';
 import 'components/recipe_card.dart';
 import 'components/inspiration_card.dart';
-import 'components/community_promo_card.dart'; // 1. Impor komponen CommunityPromoCard
+import 'components/community_promo_card.dart';
 import 'data/recipe_data.dart'; 
 import 'add_recipe_screen.dart';
+import 'favorite.dart';   // Impor halaman Favorite
+import 'my_recipe.dart';   // Impor halaman Resep Saya
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -105,7 +107,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 print("Inspiration Card diklik!");
               },
               onBookmarkTap: () {
-                print("Bookmark diklik!");
+                setState(() {
+                });
               },
             ),
 
@@ -170,7 +173,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           print("Membuka resep: ${recipe.title}");
                         },
                         onBookmarkTap: () {
-                          print("Bookmark diklik untuk: ${recipe.title}");
+                          setState(() {
+                            recipe.isBookmarked = !recipe.isBookmarked; // Mengubah status true/false
+                          });
                         },
                       );
                     },
@@ -202,15 +207,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      // BottomNavBar
+      // BottomNavBar dengan navigasi halaman
       bottomNavigationBar: BottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-      ),
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        if (index == _selectedIndex) return; // Jika sedang di halaman yang sama, tidak usah pindah
+
+        setState(() {
+          _selectedIndex = index;
+        });
+
+        if (index == 0) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          );
+        } else if (index == 1) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const FavoriteScreen()),
+          );
+        } else if (index == 2) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
+          );
+        }
+      },
+    ),
     );
   }
 }
