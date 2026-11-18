@@ -7,7 +7,7 @@ class Recipe {
   final String rating;
   final String duration;
   final String ingredientsCount;
-  final bool isBookmarked;
+  bool isBookmarked;
 
   Recipe({
     required this.imageUrl,

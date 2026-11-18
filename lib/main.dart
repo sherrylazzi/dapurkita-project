@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'load_screen.dart';
 import 'myrecipe.dart';
-import 'authentication/login_page.dart';
 // import 'dashboard.dart';
 
 void main() {
@@ -36,7 +35,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const ResepSayaScreen(),
+      home: const LoadScreen(),
       // home: const DashboardScreen(),
     );
   }

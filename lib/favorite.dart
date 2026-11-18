@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'components/top_navbar.dart';
@@ -9,6 +8,8 @@ import 'components/recipe_card.dart';
 import 'components/app_styles.dart';
 import 'data/recipe_data.dart';
 import 'models/recipe_models.dart';
+import 'my_recipe.dart';
+import 'dashboard.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -21,40 +22,22 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   int _selectedIndex = 1;
   int _selectedCategoryIndex = 0;
 
-  final TextEditingController _searchController =
-      TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
-  // Hanya mengambil dua resep yang dibutuhkan
-  late final List<Recipe> _favoriteRecipes;
+  // Membuat kategori secara dinamis dari resep yang berstatus bookmarked
+  List<String> get _categories {
+    final bookmarkedCategories = RecipeData.dummyRecipes
+        .where((recipe) => recipe.isBookmarked)
+        .map((recipe) => recipe.category)
+        .toSet();
 
-  // Status bookmark
-  final Set<String> _bookmarkedRecipes = {};
-
-  final List<String> _categories = [
-    'Semua (2)',
-    'Lauk Pauk',
-    'Kuah & Sup',
-  ];
+    return ['Semua', ...bookmarkedCategories];
+  }
 
   @override
   void initState() {
     super.initState();
-
-    _favoriteRecipes = RecipeData.dummyRecipes.where((recipe) {
-      final title = recipe.title.toLowerCase();
-
-      return title.contains('ayam goreng lengkuas') ||
-          title.contains('soto betawi');
-    }).toList();
-
-    // Mengambil status bookmark awal dari data
-    for (final recipe in _favoriteRecipes) {
-      if (recipe.isBookmarked) {
-        _bookmarkedRecipes.add(recipe.title);
-      }
-    }
-
-    // Memperbarui tampilan ketika search dihapus
+    // Memperbarui tampilan ketika pencarian diketik
     _searchController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -66,38 +49,31 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     super.dispose();
   }
 
-  // Menentukan kategori resep
-  String _getCategory(Recipe recipe) {
-    if (recipe.title.toLowerCase().contains('ayam')) {
-      return 'Lauk Pauk';
-    }
-
-    return 'Kuah & Sup';
-  }
-
-  // Filter resep berdasarkan pencarian dan kategori
+  // Filter resep berdasarkan pencarian, kategori, dan isBookmarked == true
   List<Recipe> get _filteredRecipes {
     final keyword = _searchController.text.toLowerCase();
 
-    return _favoriteRecipes.where((recipe) {
+    // Mengambil langsung resep dari sumber global RecipeData yang di-bookmark
+    final bookmarkedRecipes =
+        RecipeData.dummyRecipes.where((recipe) => recipe.isBookmarked).toList();
+
+    return bookmarkedRecipes.where((recipe) {
       final matchesSearch =
           recipe.title.toLowerCase().contains(keyword) ||
           recipe.author.toLowerCase().contains(keyword);
 
+      final currentCategory = _categories[_selectedCategoryIndex];
       final matchesCategory =
-          _selectedCategoryIndex == 0 ||
-          _getCategory(recipe) ==
-              _categories[_selectedCategoryIndex];
+          _selectedCategoryIndex == 0 || recipe.category == currentCategory;
 
-      final isBookmarked =
-          _bookmarkedRecipes.contains(recipe.title);
-
-      return matchesSearch && matchesCategory && isBookmarked;
+      return matchesSearch && matchesCategory;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    final totalBookmarked =
+        RecipeData.dummyRecipes.where((r) => r.isBookmarked).length;
     final recipes = _filteredRecipes;
 
     return Scaffold(
@@ -111,7 +87,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // HEADER BUKU RESEP
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -125,7 +100,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      '${_bookmarkedRecipes.length} Resep Aktif',
+                      '$totalBookmarked Resep Aktif',
                       style: AppTextStyles.jakartaSemiBold.copyWith(
                         fontSize: 10,
                         color: AppColors.greenDark,
@@ -166,8 +141,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             const SizedBox(height: 5),
 
             Text(
-              '2 koleksi resep pilihan yang Anda simpan untuk '
-              'dimasak di dapur rumah.',
+              'Koleksi resep pilihan yang Anda simpan untuk dimasak di dapur rumah.',
               style: AppTextStyles.jakartaRegular.copyWith(
                 fontSize: 12,
                 color: Colors.brown.shade400,
@@ -184,7 +158,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                 setState(() {});
               },
               onFilterTap: () {
-                // Tombol filter
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Filter resep favorit'),
@@ -195,10 +168,12 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
             const SizedBox(height: 14),
 
-            // CATEGORY
+            // CATEGORY CHIPS
             CategoryChips(
               categories: _categories,
-              selectedIndex: _selectedCategoryIndex,
+              selectedIndex: _selectedCategoryIndex > _categories.length - 1
+                  ? 0
+                  : _selectedCategoryIndex,
               onSelected: (index) {
                 setState(() {
                   _selectedCategoryIndex = index;
@@ -274,17 +249,14 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
                   return RecipeCard(
                     imageUrl: recipe.imageUrl,
-                    category: _getCategory(recipe),
+                    category: recipe.category,
                     title: recipe.title,
                     author: recipe.author,
                     isVerified: recipe.isVerified,
                     rating: recipe.rating,
                     duration: recipe.duration,
                     ingredientsCount: recipe.ingredientsCount,
-                    isBookmarked: _bookmarkedRecipes.contains(
-                      recipe.title,
-                    ),
-
+                    isBookmarked: recipe.isBookmarked,
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -294,10 +266,10 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         ),
                       );
                     },
-
                     onBookmarkTap: () {
                       setState(() {
-                        _bookmarkedRecipes.remove(recipe.title);
+                        // Mengubah status menjadi false agar otomatis hilang dari halaman favorite
+                        recipe.isBookmarked = false;
                       });
                     },
                   );
@@ -328,9 +300,28 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
+          if (index == _selectedIndex) return;
+
           setState(() {
             _selectedIndex = index;
           });
+
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const FavoriteScreen()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
+            );
+          }
         },
       ),
     );
