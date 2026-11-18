@@ -7,6 +7,7 @@ import 'components/recipe_card.dart';
 import 'components/inspiration_card.dart';
 import 'components/community_promo_card.dart'; // 1. Impor komponen CommunityPromoCard
 import 'data/recipe_data.dart'; 
+import 'add_recipe_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -192,7 +193,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: const Color(0xFFB94A23),
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+          );
+        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
