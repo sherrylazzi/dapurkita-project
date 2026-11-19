@@ -1,9 +1,8 @@
-
-import 'package:dapur_kita/components/app_logo.dart';
-import 'package:dapur_kita/components/app_styles.dart';
 import 'package:flutter/material.dart';
-import 'components/app_logo.dart';
-import 'components/app_styles.dart';
+import '../components/app_logo.dart';
+import '../components/app_styles.dart';
+import '../dashboard.dart';
+import 'register_page.dart'; // Sesuaikan path file RegisterPage Anda
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,559 +12,462 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _emailController =
+  final TextEditingController emailController =
       TextEditingController();
 
-  final TextEditingController _passwordController =
+  final TextEditingController passwordController =
       TextEditingController();
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool _obscurePassword = true;
   bool _rememberMe = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login berhasil diproses!'),
-          backgroundColor: AppColors.greenDark,
+  // Fungsi Login
+  void login() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    String username = emailController.text.trim();
+    String password = passwordController.text;
+
+    if (username == 'admin' && password == 'admin123') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DashboardScreen(),
         ),
       );
-
-      // Hubungkan ke halaman Dashboard setelah autentikasi tersedia.
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Username atau password salah!'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.hintWhite,
+      backgroundColor: const Color(0xFFFFF8F6),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 17,
-            vertical: 4,
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 2),
-
-              // =========================
-              // LOGO DAPURKITA
-              // =========================
-              Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  const AppLogo(size: 58),
-
-                  Positioned(
-                    right: -3,
-                    bottom: 0,
-                    child: Container(
-                      width: 21,
-                      height: 21,
-                      decoration: const BoxDecoration(
-                        color: AppColors.greenMint,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.restaurant,
-                        size: 12,
-                        color: AppColors.greenDark,
-                      ),
-                    ),
-                  ),
-                ],
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 28,
+              vertical: 24,
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 450,
               ),
-
-              const SizedBox(height: 12),
-
-              // =========================
-              // LABEL
-              // =========================
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 11,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFEAE3),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(
-                      Icons.local_fire_department,
-                      color: AppColors.redPrimary,
-                      size: 12,
+
+                    // LOGO
+                    Center(
+                      child: AppLogo(size: 82),
                     ),
-                    const SizedBox(width: 4),
+
+                    const SizedBox(height: 18),
+
+                    // NAMA APLIKASI
                     Text(
-                      'Dapur Hangat & Inspiratif',
-                      style: AppTextStyles.jakartaSemiBold.copyWith(
-                        fontSize: 9,
+                      'DAPUR HANGAT & INSPIRATIF',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.jakartaBold.copyWith(
                         color: AppColors.redPrimary,
+                        fontSize: 11,
+                        letterSpacing: 2,
                       ),
                     ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 7),
+                    const SizedBox(height: 12),
 
-              // =========================
-              // JUDUL
-              // =========================
-              Text(
-                'Selamat Datang di DapurKita',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.liberationBold.copyWith(
-                  fontSize: 20,
-                  color: AppColors.darkCharcoal,
-                ),
-              ),
-
-              const SizedBox(height: 4),
-
-              Text(
-                'Masuk untuk membuka catatan resep masakan\nAnda',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.jakartaRegular.copyWith(
-                  fontSize: 11,
-                  height: 1.5,
-                  color: AppColors.brownMuted,
-                ),
-              ),
-
-              const SizedBox(height: 13),
-
-              // =========================
-              // FORM LOGIN
-              // =========================
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.pureWhite,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // EMAIL
-                      _buildLabel(
-                        Icons.mail_outline,
-                        'Email atau Username',
+                    // JUDUL
+                    Text(
+                      'Selamat Datang di\nDapurKita',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.titleDapurKita.copyWith(
+                        color: AppColors.darkCharcoal,
+                        fontSize: 29,
+                        height: 1.3,
                       ),
+                    ),
 
-                      const SizedBox(height: 5),
+                    const SizedBox(height: 10),
 
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        style: AppTextStyles.jakartaRegular.copyWith(
-                          fontSize: 11,
-                        ),
-                        decoration: _inputDecoration(
-                          'ibu.anita@email.com',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Email atau username wajib diisi';
-                          }
-                          return null;
-                        },
+                    Text(
+                      'Masuk dan temukan inspirasi resep\nlezat untuk setiap harimu.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.descriptionBody.copyWith(
+                        color: Colors.brown.shade400,
+                        fontSize: 13,
+                        height: 1.5,
                       ),
+                    ),
 
-                      const SizedBox(height: 12),
+                    const SizedBox(height: 32),
 
-                      // PASSWORD
-                      _buildLabel(
-                        Icons.lock_outline,
-                        'Kata Sandi',
+                    // LABEL USERNAME
+                    Text(
+                      'Email atau Username',
+                      style: AppTextStyles.jakartaSemiBold.copyWith(
+                        color: AppColors.darkCharcoal,
+                        fontSize: 13,
                       ),
+                    ),
 
-                      const SizedBox(height: 5),
+                    const SizedBox(height: 9),
 
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        style: AppTextStyles.jakartaRegular.copyWith(
-                          fontSize: 11,
+                    // INPUT USERNAME
+                    TextFormField(
+                      controller: emailController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        hintText: 'Masukkan username',
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 13,
                         ),
-                        decoration: _inputDecoration(
-                          'Masukkan kata sandi',
-                        ).copyWith(
-                          suffixIcon: IconButton(
-                            onPressed: () {
+                        prefixIcon: const Icon(
+                          Icons.person_outline,
+                          color: AppColors.redPrimary,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: Colors.brown.shade100,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: Colors.brown.shade100,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: AppColors.redPrimary,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Username tidak boleh kosong';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // LABEL PASSWORD
+                    Text(
+                      'Password',
+                      style: AppTextStyles.jakartaSemiBold.copyWith(
+                        color: AppColors.darkCharcoal,
+                        fontSize: 13,
+                      ),
+                    ),
+
+                    const SizedBox(height: 9),
+
+                    // INPUT PASSWORD
+                    TextFormField(
+                      controller: passwordController,
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        hintText: 'Masukkan password',
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 13,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: AppColors.redPrimary,
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: Colors.brown.shade100,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: Colors.brown.shade100,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: AppColors.redPrimary,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password tidak boleh kosong';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // INGAT SAYA DAN LUPA PASSWORD
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _rememberMe,
+                            activeColor: AppColors.redPrimary,
+                            onChanged: (value) {
                               setState(() {
-                                _obscurePassword = !_obscurePassword;
+                                _rememberMe = value ?? false;
                               });
                             },
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
-                              size: 17,
-                              color: AppColors.brownMuted,
+                          ),
+                        ),
+
+                        const SizedBox(width: 7),
+
+                        Text(
+                          'Ingat saya',
+                          style: AppTextStyles.jakartaRegular.copyWith(
+                            fontSize: 12,
+                            color: AppColors.brownMuted,
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        TextButton(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Fitur lupa password belum tersedia.',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Lupa password?',
+                            style: AppTextStyles.jakartaSemiBold.copyWith(
+                              fontSize: 12,
+                              color: AppColors.redPrimary,
                             ),
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Kata sandi wajib diisi';
-                          }
-                          if (value.length < 6) {
-                            return 'Kata sandi minimal 6 karakter';
-                          }
-                          return null;
-                        },
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // TOMBOL LOGIN
+                    SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.redPrimary,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          'Masuk',
+                          style: AppTextStyles.jakartaBold.copyWith(
+                            color: Colors.white,
+                            fontSize: 15,
+                          ),
+                        ),
                       ),
+                    ),
 
-                      const SizedBox(height: 9),
+                    const SizedBox(height: 22),
 
-                      // INGAT SAYA & LUPA PASSWORD
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 19,
-                            height: 24,
-                            child: Checkbox(
-                              value: _rememberMe,
-                              activeColor: AppColors.redPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              side: const BorderSide(
-                                color: Color(0xFFEEDBD2),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _rememberMe = value ?? false;
-                                });
-                              },
-                            ),
+                    // PEMBATAS
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: Colors.brown.shade200,
                           ),
-
-                          const SizedBox(width: 4),
-
-                          Text(
-                            'Ingat Saya',
-                            style: AppTextStyles.jakartaRegular.copyWith(
-                              fontSize: 9,
-                              color: AppColors.brownMuted,
-                            ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
                           ),
-
-                          const Spacer(),
-
-                          GestureDetector(
-                            onTap: () {
-                              _showMessage(
-                                'Fitur lupa kata sandi',
-                              );
-                            },
-                            child: Text(
-                              'Lupa Kata Sandi?',
-                              style: AppTextStyles.jakartaSemiBold.copyWith(
-                                fontSize: 9,
-                                color: AppColors.redPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // TOMBOL MASUK
-                      SizedBox(
-                        width: double.infinity,
-                        height: 40,
-                        child: ElevatedButton.icon(
-                          onPressed: _login,
-                          icon: const Icon(
-                            Icons.restaurant,
-                            size: 15,
-                          ),
-                          label: Text(
-                            'Masuk ke Dapur',
-                            style: AppTextStyles.jakartaSemiBold.copyWith(
+                          child: Text(
+                            'atau masuk dengan',
+                            style: TextStyle(
+                              color: Colors.brown.shade400,
                               fontSize: 11,
-                              color: Colors.white,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.redPrimary,
-                            foregroundColor: Colors.white,
-                            elevation: 3,
-                            shadowColor: AppColors.redPrimary.withOpacity(0.3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // =========================
-              // PEMBATAS
-              // =========================
-              Row(
-                children: [
-                  const Expanded(
-                    child: Divider(
-                      color: Color(0xFFEEDBD2),
+                        Expanded(
+                          child: Divider(
+                            color: Colors.brown.shade200,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      'ATAU MASUK DENGAN',
-                      style: AppTextStyles.jakartaRegular.copyWith(
-                        fontSize: 8,
-                        color: AppColors.brownMuted,
-                      ),
-                    ),
-                  ),
-                  const Expanded(
-                    child: Divider(
-                      color: Color(0xFFEEDBD2),
-                    ),
-                  ),
-                ],
-              ),
 
-              const SizedBox(height: 12),
+                    const SizedBox(height: 18),
 
-              // =========================
-              // GOOGLE LOGIN
-              // =========================
-              SizedBox(
-                width: double.infinity,
-                height: 38,
-                child: OutlinedButton(
-                  onPressed: () {
-                    _showMessage(
-                      'Login Google belum dihubungkan',
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'G',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4285F4),
+                    // TOMBOL GOOGLE
+                    SizedBox(
+                      height: 50,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Login Google belum tersedia.',
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.g_mobiledata,
+                          size: 28,
+                          color: AppColors.redPrimary,
+                        ),
+                        label: Text(
+                          'Google',
+                          style: AppTextStyles.jakartaSemiBold.copyWith(
+                            color: AppColors.darkCharcoal,
+                            fontSize: 13,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: Colors.brown.shade200,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 9),
-                      Text(
-                        'Akun Google',
-                        style: AppTextStyles.jakartaMedium.copyWith(
-                          fontSize: 10,
-                          color: AppColors.darkCharcoal,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
 
-              const SizedBox(height: 13),
+                    const SizedBox(height: 28),
 
-              // =========================
-              // QUOTE CARD
-              // =========================
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFEFE8),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    // KUTIPAN
                     Container(
-                      width: 23,
-                      height: 23,
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.greenMint,
-                        borderRadius: BorderRadius.circular(6),
+                        color: AppColors.peachLight.withOpacity(0.45),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(
-                        Icons.restaurant,
-                        size: 14,
-                        color: AppColors.greenDark,
-                      ),
-                    ),
-
-                    const SizedBox(width: 9),
-
-                    Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '"Memasak dengan cinta menghadirkan '
-                            'ketenangan di setiap suapan rasa."',
-                            style: AppTextStyles.jakartaRegular.copyWith(
-                              fontSize: 10,
-                              fontStyle: FontStyle.italic,
-                              height: 1.5,
-                              color: AppColors.darkCharcoal,
-                            ),
+                          const Icon(
+                            Icons.restaurant_menu,
+                            color: AppColors.redPrimary,
+                            size: 23,
                           ),
-
-                          const SizedBox(height: 4),
-
+                          const SizedBox(height: 8),
                           Text(
-                            'Resep Warisan Nusantara',
-                            style: AppTextStyles.jakartaSemiBold.copyWith(
-                              fontSize: 8,
-                              color: AppColors.goldBrown,
+                            '"Masakan rumahan, rasa penuh cerita."',
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.jakartaMedium.copyWith(
+                              color: AppColors.brownMuted,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                         ],
                       ),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    // DAFTAR AKUN
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Belum punya akun? ',
+                          style: AppTextStyles.jakartaRegular.copyWith(
+                            color: AppColors.brownMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const RegisterPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Daftar sekarang',
+                            style: AppTextStyles.jakartaBold.copyWith(
+                              color: AppColors.redPrimary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 17),
-
-              // =========================
-              // DAFTAR AKUN
-              // =========================
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Belum punya akun? ',
-                    style: AppTextStyles.jakartaRegular.copyWith(
-                      fontSize: 10,
-                      color: AppColors.brownMuted,
-                    ),
-                  ),
-
-                  GestureDetector(
-                    onTap: () {
-                      _showMessage(
-                        'Halaman daftar akun',
-                      );
-                    },
-                    child: Text(
-                      'Daftar Sekarang',
-                      style: AppTextStyles.jakartaSemiBold.copyWith(
-                        fontSize: 10,
-                        color: AppColors.redPrimary,
-                      ),
-                    ),
-                  ),
-
-                  const Icon(
-                    Icons.arrow_forward,
-                    size: 12,
-                    color: AppColors.redPrimary,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-            ],
+            ),
           ),
         ),
-      ),
-    );
-  }
-
-  // LABEL INPUT
-  Widget _buildLabel(IconData icon, String title) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 13,
-          color: AppColors.redPrimary,
-        ),
-        const SizedBox(width: 5),
-        Text(
-          title,
-          style: AppTextStyles.jakartaSemiBold.copyWith(
-            fontSize: 10,
-            color: AppColors.darkCharcoal,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // DESAIN TEXT FIELD
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: AppTextStyles.jakartaRegular.copyWith(
-        fontSize: 10,
-        color: const Color(0xFFB6A49B),
-      ),
-      filled: true,
-      fillColor: const Color(0xFFFFF0EA),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 12,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(
-          color: AppColors.redPrimary,
-          width: 1,
-        ),
-      ),
-      errorStyle: const TextStyle(fontSize: 9),
-    );
-  }
-
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.redPrimary,
       ),
     );
   }
