@@ -10,6 +10,7 @@ import 'data/recipe_data.dart';
 import 'models/recipe_models.dart';
 import 'my_recipe.dart';
 import 'dashboard.dart';
+import 'add_recipe_screen.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -283,18 +284,17 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
       // TOMBOL TAMBAH
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.redPrimary,
+        backgroundColor: const Color(0xFFB94A23),
         shape: const CircleBorder(),
-        onPressed: () {},
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 28,
-        ),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+          );
+        },
       ),
-
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       // BOTTOM NAVBAR
       bottomNavigationBar: BottomNavBar(

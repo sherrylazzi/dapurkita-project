@@ -4,6 +4,7 @@ import 'components/top_navbar.dart';
 import 'components/bottom_navbar.dart';
 import 'dashboard.dart';
 import 'favorite.dart';
+import 'add_recipe_screen.dart';
 
 const Color primaryRed = Color(0xFFA83211);
 const Color pageBackground = Color(0xFFFFF8F5);
@@ -248,8 +249,11 @@ class _ResepSayaScreenState extends State<ResepSayaScreen> {
                           height: 38,
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              _showMessage(
-                                'Halaman tulis resep baru akan dibuka',
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AddRecipeScreen(),
+                                ),
                               );
                             },
                             icon: const Icon(
@@ -451,21 +455,17 @@ class _ResepSayaScreenState extends State<ResepSayaScreen> {
 
       // FLOATING BUTTON
       floatingActionButton: FloatingActionButton(
-        backgroundColor: primaryRed,
-        elevation: 4,
+        backgroundColor: const Color(0xFFB94A23),
         shape: const CircleBorder(),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
         onPressed: () {
-          _showMessage('Mulai menulis resep baru');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+          );
         },
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 27,
-        ),
       ),
-
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       // BOTTOM NAVBAR
       bottomNavigationBar: BottomNavBar(

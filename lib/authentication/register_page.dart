@@ -1,7 +1,5 @@
-import 'package:dapur_kita/components/app_logo.dart';
-import 'package:dapur_kita/components/app_styles.dart';
+import 'package:dapur_kita/authentication/login_page.dart';
 import 'package:flutter/material.dart';
-// Sesuaikan import di bawah ini dengan lokasi file Anda
 import '../components/app_logo.dart';
 import '../components/app_styles.dart';// File yang berisi AppColors dan AppTextStyles
 
@@ -53,9 +51,18 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           backgroundColor: AppColors.greenMint,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
         ),
       );
 
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
       // Navigasi ke halaman Login atau Home
       // Navigator.pop(context);
     }

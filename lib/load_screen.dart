@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'components/app_logo.dart'; 
 import 'components/app_styles.dart'; 
-import 'dashboard.dart'; 
+// import 'dashboard.dart'; 
+import 'authentication/login_page.dart';
 
 class LoadScreen extends StatefulWidget {
   const LoadScreen({super.key});
@@ -17,7 +18,7 @@ class _LoadScreenState extends State<LoadScreen> {
     Future.delayed(const Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     });
   }
