@@ -120,18 +120,22 @@ class InspirationCard extends StatelessWidget {
                     Positioned(
                       top: 12,
                       right: 12,
-                      child: GestureDetector(
-                        onTap: onBookmarkTap,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                            size: 18,
-                            color: Colors.black87,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: onBookmarkTap,
+                          borderRadius: BorderRadius.circular(50),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                              size: 18,
+                              color: isBookmarked ? AppColors.redPrimary : Colors.black87,
+                            ),
                           ),
                         ),
                       ),

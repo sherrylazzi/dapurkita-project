@@ -10,16 +10,16 @@ class AddRecipeScreen extends StatefulWidget {
 
 class _AddRecipeScreenState extends State<AddRecipeScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controller untuk menangkap input form
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _authorController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
   final TextEditingController _portionsController = TextEditingController();
-  
-  // Pilihan Kategori dropdown
-  String _selectedCategory = 'Porsi Keluarga';
+
+  // Pilihan Kategori dropdown (dibuat null agar wajib dipilih pengguna)
+  String? _selectedCategory;
   final List<String> _categories = [
     'Porsi Keluarga',
     'Pemula Ramah',
@@ -66,7 +66,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Bagian Upload Foto Resep (Mockup Box)
+              // 1. Bagian Upload Foto Resep (Opsional / Tidak wajib diisi)
               Container(
                 height: 180,
                 width: double.infinity,
@@ -74,7 +74,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Colors.grey.shade300, 
+                    color: Colors.grey.shade300,
                     style: BorderStyle.solid,
                     width: 1.5,
                   ),
@@ -82,80 +82,119 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.add_a_photo_outlined, size: 40, color: AppColors.redPrimary),
+                    const Icon(
+                      Icons.add_a_photo_outlined,
+                      size: 40,
+                      color: AppColors.redPrimary,
+                    ),
                     const SizedBox(height: 8),
                     Text(
-                      'Unggah Foto Masakan',
-                      style: AppTextStyles.jakartaSemiBold.copyWith(fontSize: 14, color: AppColors.redPrimary),
+                      'Unggah Foto Masakan (Opsional)',
+                      style: AppTextStyles.jakartaSemiBold.copyWith(
+                        fontSize: 14,
+                        color: AppColors.redPrimary,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Format JPG, PNG (Maks. 5MB)',
-                      style: AppTextStyles.jakartaRegular.copyWith(fontSize: 11, color: Colors.grey),
+                      style: AppTextStyles.jakartaRegular.copyWith(
+                        fontSize: 11,
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
 
-              // 2. Judul Resep
-              _buildLabel('Judul Resep'),
+              // 2. Judul Resep (Wajib)
+              _buildLabel('Judul Resep *'),
               _buildTextField(
                 controller: _titleController,
                 hintText: 'Contoh: Rendang Sapi Minang',
+                errorMessage: 'Judul resep wajib diisi',
               ),
               const SizedBox(height: 16),
 
-              // 3. Nama Pembuat / Koki
-              _buildLabel('Nama Pembuat (Koki)'),
+              // 3. Nama Pembuat / Koki (Wajib)
+              _buildLabel('Nama Pembuat (Koki) *'),
               _buildTextField(
                 controller: _authorController,
                 hintText: 'Contoh: Chef Hendra',
+                errorMessage: 'Nama pembuat wajib diisi',
               ),
               const SizedBox(height: 16),
 
-              // 4. Pilih Kategori
-              _buildLabel('Kategori Masakan'),
+              // 4. Pilih Kategori (Wajib)
+              _buildLabel('Kategori Masakan *'),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    BoxShadow(color: Colors.brown.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2)),
+                    BoxShadow(
+                      color: Colors.brown.withOpacity(0.04),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
                   ],
                 ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedCategory,
-                    isExpanded: true,
-                    items: _categories.map((String category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category, style: AppTextStyles.jakartaRegular.copyWith(fontSize: 13)),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedCategory = newValue!;
-                      });
-                    },
+                child: DropdownButtonFormField<String>(
+                  value: _selectedCategory,
+                  isExpanded: true,
+                  hint: Text(
+                    'Pilih kategori masakan',
+                    style: AppTextStyles.jakartaRegular.copyWith(
+                      fontSize: 13,
+                      color: Colors.grey.shade400,
+                    ),
                   ),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                  ),
+                  items: _categories.map((String category) {
+                    return DropdownMenuItem<String>(
+                      value: category,
+                      child: Text(
+                        category,
+                        style: AppTextStyles.jakartaRegular.copyWith(
+                          fontSize: 13,
+                          color: AppColors.darkCharcoal,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedCategory = newValue;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Kategori masakan wajib dipilih';
+                    }
+                    return null;
+                  },
                 ),
               ),
               const SizedBox(height: 16),
 
-              // 5. Durasi & Porsi (Row)
+              // 5. Durasi & Porsi (Row - Keduanya Wajib)
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildLabel('Durasi (Waktu)'),
+                        _buildLabel('Durasi (Waktu) *'),
                         _buildTextField(
                           controller: _durationController,
                           hintText: 'Cth: 45 mnt',
+                          errorMessage: 'Durasi wajib diisi',
                         ),
                       ],
                     ),
@@ -165,10 +204,11 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildLabel('Porsi'),
+                        _buildLabel('Porsi *'),
                         _buildTextField(
                           controller: _portionsController,
                           hintText: 'Cth: 4 Porsi',
+                          errorMessage: 'Porsi wajib diisi',
                         ),
                       ],
                     ),
@@ -177,12 +217,13 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 6. Deskripsi Singkat
-              _buildLabel('Deskripsi / Catatan Resep'),
+              // 6. Deskripsi Singkat (Wajib)
+              _buildLabel('Deskripsi / Catatan Resep *'),
               _buildTextField(
                 controller: _descriptionController,
                 hintText: 'Ceritakan kelezatan resep ini secara singkat...',
                 maxLines: 3,
+                errorMessage: 'Deskripsi resep wajib diisi',
               ),
               const SizedBox(height: 28),
 
@@ -238,6 +279,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
+    String errorMessage = 'Bagian ini wajib diisi',
     int maxLines = 1,
   }) {
     return Container(
@@ -245,22 +287,35 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.brown.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.brown.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
-        style: AppTextStyles.jakartaRegular.copyWith(fontSize: 13, color: AppColors.darkCharcoal),
+        style: AppTextStyles.jakartaRegular.copyWith(
+          fontSize: 13,
+          color: AppColors.darkCharcoal,
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: AppTextStyles.jakartaRegular.copyWith(fontSize: 13, color: Colors.grey.shade400),
+          hintStyle: AppTextStyles.jakartaRegular.copyWith(
+            fontSize: 13,
+            color: Colors.grey.shade400,
+          ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
         validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Bagian ini wajib diisi';
+          if (value == null || value.trim().isEmpty) {
+            return errorMessage;
           }
           return null;
         },
