@@ -27,8 +27,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   // Membuat kategori secara dinamis dari resep yang berstatus bookmarked
   List<String> get _categories {
-    final bookmarkedCategories = RecipeData.dummyRecipes
-        .where((recipe) => recipe.isBookmarked)
+    final bookmarkedCategories = RecipeData.getBookmarkedRecipes()
         .map((recipe) => recipe.category)
         .toSet();
 
@@ -38,7 +37,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   void initState() {
     super.initState();
-    // Memperbarui tampilan ketika pencarian diketik
     _searchController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -50,22 +48,20 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     super.dispose();
   }
 
-  // Filter resep berdasarkan pencarian, kategori, dan isBookmarked == true
+  // Filter resep berdasarkan pencarian, kategori, dan status bookmark
   List<Recipe> get _filteredRecipes {
-    final keyword = _searchController.text.toLowerCase();
-
-    // Mengambil langsung resep dari sumber global RecipeData yang di-bookmark
-    final bookmarkedRecipes =
-        RecipeData.dummyRecipes.where((recipe) => recipe.isBookmarked).toList();
+    final keyword = _searchController.text.trim().toLowerCase();
+    final bookmarkedRecipes = RecipeData.getBookmarkedRecipes();
+    final safeIndex =
+        _selectedCategoryIndex >= _categories.length ? 0 : _selectedCategoryIndex;
+    final currentCategory = _categories[safeIndex];
 
     return bookmarkedRecipes.where((recipe) {
-      final matchesSearch =
-          recipe.title.toLowerCase().contains(keyword) ||
+      final matchesSearch = recipe.title.toLowerCase().contains(keyword) ||
           recipe.author.toLowerCase().contains(keyword);
 
-      final currentCategory = _categories[_selectedCategoryIndex];
       final matchesCategory =
-          _selectedCategoryIndex == 0 || recipe.category == currentCategory;
+          safeIndex == 0 || recipe.category == currentCategory;
 
       return matchesSearch && matchesCategory;
     }).toList();
@@ -73,16 +69,14 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final totalBookmarked =
-        RecipeData.dummyRecipes.where((r) => r.isBookmarked).length;
+    final totalBookmarked = RecipeData.getBookmarkedRecipes().length;
     final recipes = _filteredRecipes;
+    final safeCategoryIndex =
+        _selectedCategoryIndex >= _categories.length ? 0 : _selectedCategoryIndex;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F5),
-
-      // TOP NAVBAR
       appBar: const TopNavBar(),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
         child: Column(
@@ -172,9 +166,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             // CATEGORY CHIPS
             CategoryChips(
               categories: _categories,
-              selectedIndex: _selectedCategoryIndex > _categories.length - 1
-                  ? 0
-                  : _selectedCategoryIndex,
+              selectedIndex: safeCategoryIndex,
               onSelected: (index) {
                 setState(() {
                   _selectedCategoryIndex = index;
@@ -261,16 +253,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(
-                            'Membuka ${recipe.title}',
-                          ),
+                          content: Text('Membuka ${recipe.title}'),
                         ),
                       );
                     },
                     onBookmarkTap: () {
                       setState(() {
-                        // Mengubah status menjadi false agar otomatis hilang dari halaman favorite
-                        recipe.isBookmarked = false;
+                        RecipeData.toggleBookmark(recipe.id);
                       });
                     },
                   );
@@ -287,11 +276,14 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         backgroundColor: const Color(0xFFB94A23),
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
           );
+          if (result == true && mounted) {
+            setState(() {});
+          }
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

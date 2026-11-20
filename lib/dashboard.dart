@@ -1,3 +1,4 @@
+import 'package:dapur_kita/models/recipe_models.dart';
 import 'package:flutter/material.dart';
 import 'components/top_navbar.dart';
 import 'components/bottom_navbar.dart';
@@ -22,11 +23,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   final TextEditingController _searchController = TextEditingController();
 
-  // Kategori dinamis
-  final List<String> _categoryList = [
-    'Semua',
-    ...RecipeData.dummyRecipes.map((recipe) => recipe.category).toSet(),
-  ];
+  List<Recipe> get _exploreRecipes => RecipeData.getExploreRecipes();
+
+  // Kategori dinamis dari resep jelajah
+  List<String> get _categoryList => [
+        'Semua',
+        ..._exploreRecipes.map((recipe) => recipe.category).toSet(),
+      ];
   int _selectedCategoryIndex = 0;
 
   // State untuk mengontrol apakah semua resep ditampilkan atau dibatasi 5 saja
@@ -39,24 +42,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // Logika filter resep berdasarkan kategori
-  List get _filteredRecipes {
-    if (_selectedCategoryIndex == 0) {
-      return RecipeData.dummyRecipes;
-    }
-    final selectedCategory = _categoryList[_selectedCategoryIndex];
-    return RecipeData.dummyRecipes.where((recipe) => recipe.category == selectedCategory).toList();
+  List<Recipe> get _filteredRecipes {
+    final keyword = _searchController.text.trim().toLowerCase();
+    final baseList = _selectedCategoryIndex == 0
+        ? _exploreRecipes
+        : _exploreRecipes
+            .where((recipe) => recipe.category == _categoryList[_selectedCategoryIndex])
+            .toList();
+
+    if (keyword.isEmpty) return baseList;
+
+    return baseList
+        .where((recipe) =>
+            recipe.title.toLowerCase().contains(keyword) ||
+            recipe.author.toLowerCase().contains(keyword))
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     // Ambil resep hasil filter, lalu batasi maksimal 5 jika _showAllRecipes bernilai false
+    final safeCategoryIndex =
+        _selectedCategoryIndex >= _categoryList.length ? 0 : _selectedCategoryIndex;
+
     final allFiltered = _filteredRecipes;
-    final displayRecipes = _showAllRecipes ? allFiltered : allFiltered.take(5).toList();
+    final displayRecipes =
+        _showAllRecipes ? allFiltered : allFiltered.take(5).toList();
+
+    final Recipe? heroRecipe = RecipeData.recipes.cast<Recipe?>().firstWhere(
+          (r) => r != null && r.title.toLowerCase().contains('soto betawi'),
+          orElse: () => _exploreRecipes.isNotEmpty ? _exploreRecipes.first : null,
+        );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F6F0),
       appBar: const TopNavBar(),
-      
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -67,7 +87,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // Search Bar
             CustomSearchBar(
               controller: _searchController,
-              onChanged: (value) {},
+              onChanged: (value) {
+                setState(() {});
+              },
               onFilterTap: () {
                 print("Tombol filter diklik!");
               },
@@ -78,11 +100,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             // Category Chips
             CategoryChips(
               categories: _categoryList,
-              selectedIndex: _selectedCategoryIndex,
+              selectedIndex: safeCategoryIndex,
               onSelected: (index) {
                 setState(() {
                   _selectedCategoryIndex = index;
-                  _showAllRecipes = false; // Reset tampilan list saat kategori diganti
+                  _showAllRecipes = false;
                 });
               },
             ),
@@ -90,28 +112,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 24),
 
             // Inspiration Card (Hero Banner di atas)
-            InspirationCard(
-              imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500',
-              category: 'Tradisional',
-              title: 'Soto Betawi Kuah Susu Gurih',
-              description: 'Kelezatan kuah kaldu sapi berpadu susu murni lembut dan rempah cengkeh kapulaga wangi...',
-              author: 'Bu Anita',
-              isVerified: true,
-              rating: '4.9',
-              reviewCount: '184',
-              duration: '45 mnt',
-              ingredientsCount: '6 bahan utama',
-              portions: '4 Porsi',
-              isBookmarked: RecipeData.dummyRecipes[4].isBookmarked,
-              onTap: () {
-                print("Inspiration Card diklik!");
-              },
-              onBookmarkTap: () {
-                setState(() {
-                  RecipeData.dummyRecipes[4].isBookmarked = !RecipeData.dummyRecipes[4].isBookmarked;
-                });
-              },
-            ),
+            if (heroRecipe != null)
+              InspirationCard(
+                imageUrl: heroRecipe.imageUrl.isNotEmpty
+                    ? heroRecipe.imageUrl
+                    : 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500',
+                category: heroRecipe.category,
+                title: heroRecipe.title,
+                description: heroRecipe.description.isNotEmpty
+                    ? heroRecipe.description
+                    : 'Kelezatan kuah kaldu sapi berpadu susu murni lembut dan rempah cengkeh kapulaga wangi...',
+                author: heroRecipe.author,
+                isVerified: heroRecipe.isVerified,
+                rating: heroRecipe.rating,
+                reviewCount: '184',
+                duration: heroRecipe.duration,
+                ingredientsCount: heroRecipe.ingredientsCount,
+                portions: heroRecipe.portions,
+                isBookmarked: heroRecipe.isBookmarked,
+                onTap: () {
+                  print("Inspiration Card diklik!");
+                },
+                onBookmarkTap: () {
+                  setState(() {
+                    RecipeData.toggleBookmark(heroRecipe.id);
+                  });
+                },
+              ),
 
             const SizedBox(height: 16),
 
@@ -130,13 +157,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 TextButton(
                   onPressed: () {
                     setState(() {
-                      // Toggle untuk melihat semua atau kembali dibatasi 5
                       _showAllRecipes = !_showAllRecipes;
                     });
                   },
                   child: Text(
                     _showAllRecipes ? 'Sembunyikan' : 'Semua',
-                    style: const TextStyle(color: Color(0xFFA83211), fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Color(0xFFA83211),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -175,7 +204,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         },
                         onBookmarkTap: () {
                           setState(() {
-                            recipe.isBookmarked = !recipe.isBookmarked; // Mengubah status true/false
+                            RecipeData.toggleBookmark(recipe.id);
                           });
                         },
                       );
@@ -199,43 +228,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: const Color(0xFFB94A23),
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
           );
+          if (result == true && mounted) {
+            setState(() {});
+          }
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       // BottomNavBar dengan navigasi halaman
       bottomNavigationBar: BottomNavBar(
-      currentIndex: _selectedIndex,
-      onTap: (index) {
-        if (index == _selectedIndex) return; // Jika sedang di halaman yang sama, tidak usah pindah
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          if (index == _selectedIndex) return;
 
-        setState(() {
-          _selectedIndex = index;
-        });
+          setState(() {
+            _selectedIndex = index;
+          });
 
-        if (index == 0) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const DashboardScreen()),
-          );
-        } else if (index == 1) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const FavoriteScreen()),
-          );
-        } else if (index == 2) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
-          );
-        }
-      },
-    ),
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const FavoriteScreen()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
+            );
+          }
+        },
+      ),
     );
   }
 }
