@@ -1,8 +1,8 @@
 
 import 'package:dapur_kita/authentication/login_page.dart';
 import 'package:flutter/material.dart';
-import 'load_screen.dart';
-import 'my_recipe.dart';
+// import 'load_screen.dart';
+// import 'my_recipe.dart';
 // import 'dashboard.dart';
 
 void main() {

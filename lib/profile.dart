@@ -1,331 +1,392 @@
-
 import 'package:flutter/material.dart';
-import 'package:dapur_kita/components/app_styles.dart';
 import 'package:dapur_kita/authentication/login_page.dart';
+import 'package:dapur_kita/components/app_styles.dart';
+import 'package:dapur_kita/components/bottom_navbar.dart';
+import 'package:dapur_kita/components/top_navbar.dart';
+import 'package:dapur_kita/add_recipe_screen.dart';
+import 'package:dapur_kita/dashboard.dart';
+import 'package:dapur_kita/favorite.dart';
+import 'package:dapur_kita/my_recipe.dart';
 
-class ProfilePage extends StatelessWidget {
-  final Future<void> Function() onLogout;
+class ProfilePage extends StatefulWidget {
+  final Future<void> Function()? onLogout;
 
   const ProfilePage({
     super.key,
-    required this.onLogout,
+    this.onLogout,
   });
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final int _selectedIndex = 3;
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.redPrimary,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _navigateTo(Widget page) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.hintWhite,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      backgroundColor: const Color(0xFFFFF8F5),
 
-              // HEADER
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 15,
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: AppColors.redPrimary,
-                        size: 20,
-                      ),
-                    ),
+      // TOP NAVBAR
+      appBar: const TopNavBar(),
 
-                    Expanded(
-                      child: Text(
-                        'Profil Saya',
-                        style: AppTextStyles.liberationBold.copyWith(
-                          fontSize: 23,
-                          color: AppColors.redPrimary,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // PROFILE CARD
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: _cardDecoration(),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 34,
+                        backgroundImage: NetworkImage(
+                          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
                         ),
                       ),
-                    ),
-
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.settings_outlined,
-                        color: AppColors.brownMuted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // PROFILE CARD
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.brownMuted.withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const CircleAvatar(
-                          radius: 38,
-                          backgroundColor: Color(0xFFE8DAD3),
-                          child: Icon(
-                            Icons.person,
-                            size: 45,
-                            color: AppColors.brownMuted,
-                          ),
-                        ),
-
-                        const SizedBox(width: 15),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Anita Kusum',
-                                style: AppTextStyles.jakartaBold.copyWith(
-                                  fontSize: 17,
-                                  color: AppColors.brownMuted,
-                                ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Anita Kusum',
+                              style: AppTextStyles.liberationBold.copyWith(
+                                fontSize: 18,
+                                color: AppColors.darkCharcoal,
                               ),
-
-                              const SizedBox(height: 3),
-
-                              Text(
-                                '@dapurAnita',
-                                style: AppTextStyles.jakartaRegular.copyWith(
-                                  fontSize: 12,
-                                  color: Colors.brown,
-                                ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '@dapuranita',
+                              style: AppTextStyles.jakartaRegular.copyWith(
+                                fontSize: 12,
+                                color: Colors.brown.shade400,
                               ),
-
-                              const SizedBox(height: 8),
-
-                              Row(
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 9,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFBBEFC6),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(
                                     Icons.verified,
-                                    size: 13,
+                                    size: 12,
                                     color: AppColors.greenDark,
                                   ),
-
-                                  const SizedBox(width: 5),
-
+                                  const SizedBox(width: 4),
                                   Text(
                                     'Koki Rumahan',
                                     style: AppTextStyles.jakartaSemiBold.copyWith(
-                                      fontSize: 11,
+                                      fontSize: 10,
                                       color: AppColors.greenDark,
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 43,
-                      child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                          size: 17,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 40,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        _showMessage('Fitur Edit Profil');
+                      },
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      label: Text(
+                        'Edit Profil',
+                        style: AppTextStyles.jakartaSemiBold.copyWith(
+                          fontSize: 12,
                         ),
-                        label: Text(
-                          'Edit Profil',
-                          style: AppTextStyles.jakartaSemiBold.copyWith(
-                            fontSize: 13,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.redPrimary,
-                          side: const BorderSide(
-                            color: AppColors.redPrimary,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(13),
-                          ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.redPrimary,
+                        side: const BorderSide(color: AppColors.redPrimary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(13),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
 
-              const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-              // STATISTIK
-              _sectionTitle('Aktivitas Saya'),
-
-              const SizedBox(height: 12),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    _statCard(
-                      Icons.menu_book_rounded,
-                      '8',
-                      'Resep',
-                      AppColors.greenDark,
-                    ),
-
-                    const SizedBox(width: 10),
-
-                    _statCard(
-                      Icons.favorite_rounded,
-                      '142',
-                      'Disukai',
-                      AppColors.redPrimary,
-                    ),
-
-                    const SizedBox(width: 10),
-
-                    _statCard(
-                      Icons.edit_note_rounded,
-                      '4',
-                      'Draf',
-                      AppColors.goldBrown,
-                    ),
-                  ],
-                ),
+            // STATISTIK AKTIVITAS
+            Text(
+              'Aktivitas Saya',
+              style: AppTextStyles.liberationBold.copyWith(
+                fontSize: 17,
+                color: AppColors.darkCharcoal,
               ),
-
-              const SizedBox(height: 25),
-
-              // MENU AKUN
-              _sectionTitle('Akun Saya'),
-
-              const SizedBox(height: 10),
-
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 5,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                _statCard(
+                  icon: Icons.menu_book_rounded,
+                  number: '8',
+                  label: 'Resep',
+                  color: AppColors.greenDark,
+                  onTap: () => _navigateTo(const ResepSayaScreen()),
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                const SizedBox(width: 10),
+                _statCard(
+                  icon: Icons.favorite_rounded,
+                  number: '142',
+                  label: 'Disukai',
+                  color: AppColors.redPrimary,
+                  onTap: () => _showMessage('142 total suka resep'),
                 ),
-                child: Column(
-                  children: [
-                    _menuItem(
-                      Icons.person_outline,
-                      'Informasi Pribadi',
-                      'Kelola informasi akun kamu',
-                      () {},
-                    ),
-
-                    _divider(),
-
-                    _menuItem(
-                      Icons.lock_outline,
-                      'Keamanan Akun',
-                      'Ubah password dan keamanan',
-                      () {},
-                    ),
-
-                    _divider(),
-
-                    _menuItem(
-                      Icons.notifications_none,
-                      'Notifikasi',
-                      'Atur pemberitahuan aplikasi',
-                      () {},
-                    ),
-
-                    _divider(),
-
-                    _menuItem(
-                      Icons.help_outline,
-                      'Pusat Bantuan',
-                      'Bantuan penggunaan DapurKita',
-                      () {},
-                    ),
-                  ],
+                const SizedBox(width: 10),
+                _statCard(
+                  icon: Icons.bookmark_rounded,
+                  number: '2',
+                  label: 'Tersimpan',
+                  color: AppColors.goldBrown,
+                  onTap: () => _navigateTo(const FavoriteScreen()),
                 ),
+              ],
+            ),
+
+            const SizedBox(height: 22),
+
+            // NAVIGASI & AKUN
+            Text(
+              'Menu & Akun',
+              style: AppTextStyles.liberationBold.copyWith(
+                fontSize: 17,
+                color: AppColors.darkCharcoal,
               ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              decoration: _cardDecoration(),
+              child: Column(
+                children: [
+                  _menuItem(
+                    icon: Icons.explore_outlined,
+                    title: 'Jelajah Resep',
+                    subtitle: 'Temukan inspirasi masakan harian',
+                    onTap: () => _navigateTo(const DashboardScreen()),
+                  ),
+                  _divider(),
+                  _menuItem(
+                    icon: Icons.bookmark_outline,
+                    title: 'Buku Resep Favorit',
+                    subtitle: 'Lihat resep yang sudah kamu simpan',
+                    onTap: () => _navigateTo(const FavoriteScreen()),
+                  ),
+                  _divider(),
+                  _menuItem(
+                    icon: Icons.menu_book_outlined,
+                    title: 'Kelola Resep Saya',
+                    subtitle: 'Atur resep publikasi dan draf',
+                    onTap: () => _navigateTo(const ResepSayaScreen()),
+                  ),
+                  _divider(),
+                  _menuItem(
+                    icon: Icons.add_circle_outline,
+                    title: 'Tulis Resep Baru',
+                    subtitle: 'Buat dan bagikan resep baru',
+                    onTap: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddRecipeScreen(),
+                        ),
+                      );
+                      if (result == true && mounted) {
+                        setState(() {});
+                      }
+                    },
+                  ),
+                  _divider(),
+                  _menuItem(
+                    icon: Icons.notifications_none,
+                    title: 'Notifikasi',
+                    subtitle: 'Atur pemberitahuan aplikasi',
+                    onTap: () => _showMessage('Pengaturan Notifikasi'),
+                  ),
+                  _divider(),
+                  _menuItem(
+                    icon: Icons.lock_outline,
+                    title: 'Keamanan Akun',
+                    subtitle: 'Ubah password dan keamanan',
+                    onTap: () => _showMessage('Pengaturan Keamanan'),
+                  ),
+                ],
+              ),
+            ),
 
-              const SizedBox(height: 22),
+            const SizedBox(height: 18),
 
-              // LOGOUT
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+            // LOGOUT
+            Container(
+              decoration: _cardDecoration(),
+              child: ListTile(
+                leading: const Icon(
+                  Icons.logout_rounded,
+                  color: AppColors.redPrimary,
                 ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => _showLogoutDialog(context),
-                  child: Padding(
-                    padding: const EdgeInsets.all(17),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.logout_rounded,
-                          color: AppColors.redPrimary,
-                        ),
-
-                        const SizedBox(width: 13),
-
-                        Expanded(
-                          child: Text(
-                            'Keluar dari Akun',
-                            style: AppTextStyles.jakartaSemiBold.copyWith(
-                              fontSize: 13,
-                              color: AppColors.redPrimary,
-                            ),
-                          ),
-                        ),
-
-                        const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: AppColors.redPrimary,
-                        ),
-                      ],
-                    ),
+                title: Text(
+                  'Keluar dari Akun',
+                  style: AppTextStyles.jakartaSemiBold.copyWith(
+                    fontSize: 13,
+                    color: AppColors.redPrimary,
                   ),
                 ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14,
+                  color: AppColors.redPrimary,
+                ),
+                onTap: () => _showLogoutDialog(context),
               ),
+            ),
 
-              const SizedBox(height: 22),
+            const SizedBox(height: 20),
 
-              // FOOTER
-              Center(
-                child: Text(
-                  'DapurKita v1.0.0',
-                  style: AppTextStyles.jakartaRegular.copyWith(
-                    fontSize: 11,
-                    color: AppColors.brownMuted.withOpacity(0.6),
-                  ),
+            Center(
+              child: Text(
+                'DapurKita v1.0.0',
+                style: AppTextStyles.jakartaRegular.copyWith(
+                  fontSize: 11,
+                  color: Colors.brown.shade400,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
 
-              const SizedBox(height: 25),
+      // FLOATING BUTTON
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFB94A23),
+        shape: const CircleBorder(),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 28,
+        ),
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddRecipeScreen(),
+            ),
+          );
+          if (result == true && mounted) {
+            setState(() {});
+          }
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      // BOTTOM NAVBAR
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          if (index == _selectedIndex) return;
+
+          if (index == 0) {
+            _navigateTo(const DashboardScreen());
+          } else if (index == 1) {
+            _navigateTo(const FavoriteScreen());
+          } else if (index == 2) {
+            _navigateTo(const ResepSayaScreen());
+          }
+        },
+      ),
+    );
+  }
+
+  BoxDecoration _cardDecoration() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.brown.withOpacity(0.06),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    );
+  }
+
+  Widget _statCard({
+    required IconData icon,
+    required String number,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          decoration: _cardDecoration(),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(height: 6),
+              Text(
+                number,
+                style: AppTextStyles.jakartaBold.copyWith(
+                  fontSize: 18,
+                  color: AppColors.darkCharcoal,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: AppTextStyles.jakartaRegular.copyWith(
+                  fontSize: 11,
+                  color: Colors.brown.shade400,
+                ),
+              ),
             ],
           ),
         ),
@@ -333,159 +394,84 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // JUDUL SECTION
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(
-        title,
-        style: AppTextStyles.jakartaBold.copyWith(
-          fontSize: 17,
-          color: AppColors.brownMuted,
-        ),
-      ),
-    );
-  }
-
-  // STATISTIK CARD
-  Widget _statCard(
-    IconData icon,
-    String number,
-    String label,
-    Color color,
-  ) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 17),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(17),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.brownMuted.withOpacity(0.05),
-              blurRadius: 8,
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 25),
-
-            const SizedBox(height: 8),
-
-            Text(
-              number,
-              style: AppTextStyles.jakartaBold.copyWith(
-                fontSize: 20,
-                color: AppColors.brownMuted,
-              ),
-            ),
-
-            const SizedBox(height: 3),
-
-            Text(
-              label,
-              style: AppTextStyles.jakartaRegular.copyWith(
-                fontSize: 11,
-                color: AppColors.brownMuted,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // MENU ITEM
-  Widget _menuItem(
-    IconData icon,
-    String title,
-    String subtitle,
-    VoidCallback onTap,
-  ) {
+  Widget _menuItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 4,
-        vertical: 3,
-      ),
       leading: Icon(
         icon,
         color: AppColors.redPrimary,
-        size: 24,
+        size: 22,
       ),
       title: Text(
         title,
         style: AppTextStyles.jakartaSemiBold.copyWith(
           fontSize: 13,
-          color: AppColors.brownMuted,
+          color: AppColors.darkCharcoal,
         ),
       ),
       subtitle: Text(
         subtitle,
         style: AppTextStyles.jakartaRegular.copyWith(
           fontSize: 11,
-          color: AppColors.brownMuted.withOpacity(0.7),
+          color: Colors.brown.shade400,
         ),
       ),
       trailing: const Icon(
         Icons.arrow_forward_ios,
         size: 14,
-        color: AppColors.brownMuted,
+        color: Colors.brown,
       ),
       onTap: onTap,
     );
   }
 
-  // DIVIDER
   Widget _divider() {
     return Divider(
-      color: AppColors.brownMuted.withOpacity(0.10),
       height: 1,
+      thickness: 1,
+      color: Colors.grey.shade100,
+      indent: 16,
+      endIndent: 16,
     );
   }
 
-  // LOGOUT DIALOG
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: AppColors.hintWhite,
+          backgroundColor: const Color(0xFFFFF8F5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-
           title: Text(
             'Keluar dari Akun?',
             style: AppTextStyles.jakartaBold.copyWith(
-              color: AppColors.brownMuted,
+              color: AppColors.darkCharcoal,
               fontSize: 18,
             ),
           ),
-
           content: Text(
             'Apakah kamu yakin ingin keluar dari akun DapurKita?',
             style: AppTextStyles.jakartaRegular.copyWith(
-              color: AppColors.brownMuted,
+              color: Colors.brown.shade500,
               fontSize: 13,
             ),
           ),
-
           actions: [
-            // BATAL
             TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(
                 'Batal',
                 style: AppTextStyles.jakartaSemiBold.copyWith(
-                  color: AppColors.brownMuted,
+                  color: Colors.brown.shade500,
                 ),
               ),
             ),
-
-            // YA, KELUAR
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.redPrimary,
@@ -494,17 +480,12 @@ class ProfilePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-
               onPressed: () async {
-                // Tutup dialog
                 Navigator.pop(dialogContext);
-
-                // Jalankan proses logout
-                await onLogout();
-
+                if (widget.onLogout != null) {
+                  await widget.onLogout!();
+                }
                 if (!context.mounted) return;
-
-                // Kembali ke halaman LoginScreen
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
@@ -513,7 +494,6 @@ class ProfilePage extends StatelessWidget {
                   (route) => false,
                 );
               },
-
               child: Text(
                 'Ya, Keluar',
                 style: AppTextStyles.jakartaSemiBold.copyWith(

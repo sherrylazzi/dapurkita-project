@@ -5,6 +5,7 @@ import 'components/bottom_navbar.dart';
 import 'dashboard.dart';
 import 'favorite.dart';
 import 'add_recipe_screen.dart';
+import 'profile.dart';
 
 const Color primaryRed = Color(0xFFA83211);
 const Color pageBackground = Color(0xFFFFF8F5);
@@ -473,10 +474,6 @@ class _ResepSayaScreenState extends State<ResepSayaScreen> {
         onTap: (index) {
           if (index == _selectedIndex) return;
 
-          setState(() {
-            _selectedIndex = index;
-          });
-
           if (index == 0) {
             Navigator.pushReplacement(
               context,
@@ -491,6 +488,17 @@ class _ResepSayaScreenState extends State<ResepSayaScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
+            );
+          } else if (index == 3) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfilePage(
+                  onLogout: () async {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  },
+                ),
+              ),
             );
           }
         },

@@ -299,37 +299,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (index == 0) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const DashboardScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const DashboardScreen()),
             );
           } else if (index == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const FavoriteScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const FavoriteScreen()),
             );
           } else if (index == 2) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const ResepSayaScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
             );
           } else if (index == 3) {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) => ProfilePage(
                   onLogout: () async {
-                    Navigator.popUntil(
-                      context,
-                      (route) => route.isFirst,
-                    );
+                    Navigator.popUntil(context, (route) => route.isFirst);
                   },
                 ),
               ),

@@ -12,6 +12,7 @@ import 'models/recipe_models.dart';
 import 'my_recipe.dart';
 import 'dashboard.dart';
 import 'add_recipe_screen.dart';
+import 'profile.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -359,32 +360,30 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         onTap: (index) {
           if (index == _selectedIndex) return;
 
-          setState(() {
-            _selectedIndex = index;
-          });
-
           if (index == 0) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const DashboardScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const DashboardScreen()),
             );
           } else if (index == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const FavoriteScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const FavoriteScreen()),
             );
           } else if (index == 2) {
             Navigator.pushReplacement(
               context,
+              MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
+            );
+          } else if (index == 3) {
+            Navigator.pushReplacement(
+              context,
               MaterialPageRoute(
-                builder: (context) =>
-                    const ResepSayaScreen(),
+                builder: (context) => ProfilePage(
+                  onLogout: () async {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  },
+                ),
               ),
             );
           }
