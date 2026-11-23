@@ -6,6 +6,7 @@ import 'components/search_bar.dart';
 import 'components/category_chips.dart';
 import 'components/recipe_card.dart';
 import 'components/app_styles.dart';
+import 'components/recipe_filter_sheet.dart';
 import 'data/recipe_data.dart';
 import 'models/recipe_models.dart';
 import 'my_recipe.dart';
@@ -23,20 +24,15 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   int _selectedIndex = 1;
   int _selectedCategoryIndex = 0;
 
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController =
+      TextEditingController();
 
-  // Membuat kategori secara dinamis dari resep yang berstatus bookmarked
-  List<String> get _categories {
-    final bookmarkedCategories = RecipeData.getBookmarkedRecipes()
-        .map((recipe) => recipe.category)
-        .toSet();
-
-    return ['Semua', ...bookmarkedCategories];
-  }
+  String _sortOption = 'default';
 
   @override
   void initState() {
     super.initState();
+
     _searchController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -48,43 +44,91 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     super.dispose();
   }
 
-  // Filter resep berdasarkan pencarian, kategori, dan status bookmark
+  // Kategori resep favorit
+  List<String> get _categories {
+    final bookmarkedCategories =
+        RecipeData.getBookmarkedRecipes()
+            .map((recipe) => recipe.category)
+            .toSet()
+            .toList();
+
+    return ['Semua', ...bookmarkedCategories];
+  }
+
+  // Search dan filter resep favorit
   List<Recipe> get _filteredRecipes {
-    final keyword = _searchController.text.trim().toLowerCase();
-    final bookmarkedRecipes = RecipeData.getBookmarkedRecipes();
+    final keyword =
+        _searchController.text.trim().toLowerCase();
+
+    final bookmarkedRecipes =
+        RecipeData.getBookmarkedRecipes();
+
     final safeIndex =
-        _selectedCategoryIndex >= _categories.length ? 0 : _selectedCategoryIndex;
+        _selectedCategoryIndex >= _categories.length
+            ? 0
+            : _selectedCategoryIndex;
+
     final currentCategory = _categories[safeIndex];
 
-    return bookmarkedRecipes.where((recipe) {
-      final matchesSearch = recipe.title.toLowerCase().contains(keyword) ||
-          recipe.author.toLowerCase().contains(keyword);
+    final filtered = bookmarkedRecipes.where((recipe) {
+      final matchesSearch =
+          recipe.title.toLowerCase().contains(keyword) ||
+          recipe.author.toLowerCase().contains(keyword) ||
+          recipe.category.toLowerCase().contains(keyword) ||
+          recipe.description.toLowerCase().contains(keyword) ||
+          recipe.duration.toLowerCase().contains(keyword) ||
+          recipe.ingredientsCount.toLowerCase().contains(keyword);
 
       final matchesCategory =
-          safeIndex == 0 || recipe.category == currentCategory;
+          safeIndex == 0 ||
+          recipe.category == currentCategory;
 
       return matchesSearch && matchesCategory;
     }).toList();
+
+    return sortRecipes(filtered, _sortOption);
+  }
+
+  // Menampilkan pilihan filter
+  Future<void> _openFilter() async {
+    final selected = await RecipeFilterSheet.show(
+      context,
+      selected: _sortOption,
+    );
+
+    if (selected != null && mounted) {
+      setState(() {
+        _sortOption = selected;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final totalBookmarked = RecipeData.getBookmarkedRecipes().length;
+    final totalBookmarked =
+        RecipeData.getBookmarkedRecipes().length;
+
     final recipes = _filteredRecipes;
+
     final safeCategoryIndex =
-        _selectedCategoryIndex >= _categories.length ? 0 : _selectedCategoryIndex;
+        _selectedCategoryIndex >= _categories.length
+            ? 0
+            : _selectedCategoryIndex;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F5),
       appBar: const TopNavBar(),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             // HEADER BUKU RESEP
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
@@ -103,6 +147,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     ),
                   ],
                 ),
+
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 9,
@@ -125,6 +170,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
             const SizedBox(height: 8),
 
+            // JUDUL
             Text(
               'Buku Resep Favorit',
               style: AppTextStyles.liberationBold.copyWith(
@@ -146,19 +192,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
             const SizedBox(height: 16),
 
-            // SEARCH BAR
+            // SEARCH BAR DAN FILTER
             CustomSearchBar(
               controller: _searchController,
               onChanged: (value) {
                 setState(() {});
               },
-              onFilterTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Filter resep favorit'),
-                  ),
-                );
-              },
+              onFilterTap: _openFilter,
             ),
 
             const SizedBox(height: 14),
@@ -178,7 +218,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
             // JUDUL DAFTAR
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Resep Tersimpan',
@@ -187,6 +228,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     color: AppColors.darkCharcoal,
                   ),
                 ),
+
                 Text(
                   '${recipes.length} resep',
                   style: AppTextStyles.jakartaRegular.copyWith(
@@ -213,14 +255,18 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         size: 55,
                         color: Colors.brown.shade200,
                       ),
+
                       const SizedBox(height: 10),
+
                       Text(
                         'Resep tidak ditemukan',
                         style: AppTextStyles.jakartaSemiBold.copyWith(
                           color: AppColors.darkCharcoal,
                         ),
                       ),
+
                       const SizedBox(height: 5),
+
                       Text(
                         'Coba cari resep lainnya.',
                         style: AppTextStyles.jakartaRegular.copyWith(
@@ -235,7 +281,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             else
               ListView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
+                physics:
+                    const NeverScrollableScrollPhysics(),
                 itemCount: recipes.length,
                 itemBuilder: (context, index) {
                   final recipe = recipes[index];
@@ -248,18 +295,26 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     isVerified: recipe.isVerified,
                     rating: recipe.rating,
                     duration: recipe.duration,
-                    ingredientsCount: recipe.ingredientsCount,
+                    ingredientsCount:
+                        recipe.ingredientsCount,
                     isBookmarked: recipe.isBookmarked,
+
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(
                         SnackBar(
-                          content: Text('Membuka ${recipe.title}'),
+                          content: Text(
+                            'Membuka ${recipe.title}',
+                          ),
                         ),
                       );
                     },
+
                     onBookmarkTap: () {
                       setState(() {
-                        RecipeData.toggleBookmark(recipe.id);
+                        RecipeData.toggleBookmark(
+                          recipe.id,
+                        );
                       });
                     },
                   );
@@ -275,18 +330,28 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFB94A23),
         shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 28,
+        ),
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+            MaterialPageRoute(
+              builder: (context) =>
+                  const AddRecipeScreen(),
+            ),
           );
+
           if (result == true && mounted) {
             setState(() {});
           }
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.centerDocked,
 
       // BOTTOM NAVBAR
       bottomNavigationBar: BottomNavBar(
@@ -301,17 +366,26 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
           if (index == 0) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
+              MaterialPageRoute(
+                builder: (context) =>
+                    const DashboardScreen(),
+              ),
             );
           } else if (index == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const FavoriteScreen()),
+              MaterialPageRoute(
+                builder: (context) =>
+                    const FavoriteScreen(),
+              ),
             );
           } else if (index == 2) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
+              MaterialPageRoute(
+                builder: (context) =>
+                    const ResepSayaScreen(),
+              ),
             );
           }
         },

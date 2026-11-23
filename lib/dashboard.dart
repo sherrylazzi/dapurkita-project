@@ -7,10 +7,12 @@ import 'components/category_chips.dart';
 import 'components/recipe_card.dart';
 import 'components/inspiration_card.dart';
 import 'components/community_promo_card.dart';
-import 'data/recipe_data.dart'; 
+import 'components/recipe_filter_sheet.dart';
+import 'data/recipe_data.dart';
 import 'add_recipe_screen.dart';
-import 'favorite.dart';   // Impor halaman Favorite
-import 'my_recipe.dart';   // Impor halaman Resep Saya
+import 'favorite.dart';
+import 'my_recipe.dart';
+import 'profile.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -21,19 +23,30 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController =
+      TextEditingController();
 
-  List<Recipe> get _exploreRecipes => RecipeData.getExploreRecipes();
+  List<Recipe> get _exploreRecipes =>
+      RecipeData.getExploreRecipes();
 
-  // Kategori dinamis dari resep jelajah
   List<String> get _categoryList => [
         'Semua',
-        ..._exploreRecipes.map((recipe) => recipe.category).toSet(),
+        ..._exploreRecipes
+            .map((recipe) => recipe.category)
+            .toSet(),
       ];
-  int _selectedCategoryIndex = 0;
 
-  // State untuk mengontrol apakah semua resep ditampilkan atau dibatasi 5 saja
+  int _selectedCategoryIndex = 0;
   bool _showAllRecipes = false;
+  String _sortOption = 'default';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() {
@@ -41,38 +54,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.dispose();
   }
 
-  // Logika filter resep berdasarkan kategori
   List<Recipe> get _filteredRecipes {
-    final keyword = _searchController.text.trim().toLowerCase();
+    final keyword =
+        _searchController.text.trim().toLowerCase();
+
     final baseList = _selectedCategoryIndex == 0
         ? _exploreRecipes
         : _exploreRecipes
-            .where((recipe) => recipe.category == _categoryList[_selectedCategoryIndex])
+            .where((recipe) =>
+                recipe.category ==
+                _categoryList[_selectedCategoryIndex])
             .toList();
 
-    if (keyword.isEmpty) return baseList;
+    final matched = baseList.where((recipe) {
+      return keyword.isEmpty ||
+          recipe.title.toLowerCase().contains(keyword) ||
+          recipe.author.toLowerCase().contains(keyword) ||
+          recipe.category.toLowerCase().contains(keyword) ||
+          recipe.description.toLowerCase().contains(keyword) ||
+          recipe.duration.toLowerCase().contains(keyword) ||
+          recipe.ingredientsCount.toLowerCase().contains(keyword);
+    }).toList();
 
-    return baseList
-        .where((recipe) =>
-            recipe.title.toLowerCase().contains(keyword) ||
-            recipe.author.toLowerCase().contains(keyword))
-        .toList();
+    return sortRecipes(matched, _sortOption);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Ambil resep hasil filter, lalu batasi maksimal 5 jika _showAllRecipes bernilai false
     final safeCategoryIndex =
-        _selectedCategoryIndex >= _categoryList.length ? 0 : _selectedCategoryIndex;
+        _selectedCategoryIndex >= _categoryList.length
+            ? 0
+            : _selectedCategoryIndex;
 
     final allFiltered = _filteredRecipes;
-    final displayRecipes =
-        _showAllRecipes ? allFiltered : allFiltered.take(5).toList();
 
-    final Recipe? heroRecipe = RecipeData.recipes.cast<Recipe?>().firstWhere(
-          (r) => r != null && r.title.toLowerCase().contains('soto betawi'),
-          orElse: () => _exploreRecipes.isNotEmpty ? _exploreRecipes.first : null,
-        );
+    final displayRecipes = _showAllRecipes
+        ? allFiltered
+        : allFiltered.take(5).toList();
+
+    final Recipe? heroRecipe =
+        RecipeData.recipes.cast<Recipe?>().firstWhere(
+              (r) =>
+                  r != null &&
+                  r.title.toLowerCase().contains('soto betawi'),
+              orElse: () => _exploreRecipes.isNotEmpty
+                  ? _exploreRecipes.first
+                  : null,
+            );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F6F0),
@@ -83,21 +111,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
-            
-            // Search Bar
+
             CustomSearchBar(
               controller: _searchController,
               onChanged: (value) {
                 setState(() {});
               },
-              onFilterTap: () {
-                print("Tombol filter diklik!");
+              onFilterTap: () async {
+                final selected =
+                    await RecipeFilterSheet.show(
+                  context,
+                  selected: _sortOption,
+                );
+
+                if (selected != null && mounted) {
+                  setState(() {
+                    _sortOption = selected;
+                  });
+                }
               },
             ),
-            
+
             const SizedBox(height: 20),
 
-            // Category Chips
             CategoryChips(
               categories: _categoryList,
               selectedIndex: safeCategoryIndex,
@@ -111,7 +147,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             const SizedBox(height: 24),
 
-            // Inspiration Card (Hero Banner di atas)
             if (heroRecipe != null)
               InspirationCard(
                 imageUrl: heroRecipe.imageUrl.isNotEmpty
@@ -142,7 +177,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             const SizedBox(height: 16),
 
-            // Judul Section & Tombol "Semua"
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -161,7 +195,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     });
                   },
                   child: Text(
-                    _showAllRecipes ? 'Sembunyikan' : 'Semua',
+                    _showAllRecipes
+                        ? 'Sembunyikan'
+                        : 'Semua',
                     style: const TextStyle(
                       color: Color(0xFFA83211),
                       fontWeight: FontWeight.bold,
@@ -170,12 +206,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
+
             const SizedBox(height: 8),
-            
-            // Daftar Card Resep (Maksimal 5 item atau semua jika tombol 'Semua' diklik)
+
             displayRecipes.isEmpty
                 ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32.0),
+                    padding:
+                        EdgeInsets.symmetric(vertical: 32.0),
                     child: Center(
                       child: Text(
                         'Tidak ada resep dalam kategori ini.',
@@ -185,10 +222,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   )
                 : ListView.builder(
                     shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
+                    physics:
+                        const NeverScrollableScrollPhysics(),
                     itemCount: displayRecipes.length,
                     itemBuilder: (context, index) {
                       final recipe = displayRecipes[index];
+
                       return RecipeCard(
                         imageUrl: recipe.imageUrl,
                         category: recipe.category,
@@ -197,14 +236,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         isVerified: recipe.isVerified,
                         rating: recipe.rating,
                         duration: recipe.duration,
-                        ingredientsCount: recipe.ingredientsCount,
+                        ingredientsCount:
+                            recipe.ingredientsCount,
                         isBookmarked: recipe.isBookmarked,
                         onTap: () {
-                          print("Membuka resep: ${recipe.title}");
+                          print(
+                              "Membuka resep: ${recipe.title}");
                         },
                         onBookmarkTap: () {
                           setState(() {
-                            RecipeData.toggleBookmark(recipe.id);
+                            RecipeData.toggleBookmark(
+                                recipe.id);
                           });
                         },
                       );
@@ -213,57 +255,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             const SizedBox(height: 8),
 
-            // COMMUNITY PROMO CARD DI PALING BAWAH (SETELAH MENU)
             CommunityPromoCard(
               onTap: () {
-                print("Tombol Baca Panduan Resep diklik!");
+                print(
+                    "Tombol Baca Panduan Resep diklik!");
               },
             ),
           ],
         ),
       ),
 
-      // Tombol Tambah Resep di tengah bawah
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFB94A23),
         shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 28,
+        ),
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddRecipeScreen()),
+            MaterialPageRoute(
+              builder: (context) =>
+                  const AddRecipeScreen(),
+            ),
           );
+
           if (result == true && mounted) {
             setState(() {});
           }
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      // BottomNavBar dengan navigasi halaman
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.centerDocked,
+
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
           if (index == _selectedIndex) return;
 
-          setState(() {
-            _selectedIndex = index;
-          });
-
           if (index == 0) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
+              MaterialPageRoute(
+                builder: (context) =>
+                    const DashboardScreen(),
+              ),
             );
           } else if (index == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const FavoriteScreen()),
+              MaterialPageRoute(
+                builder: (context) =>
+                    const FavoriteScreen(),
+              ),
             );
           } else if (index == 2) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const ResepSayaScreen()),
+              MaterialPageRoute(
+                builder: (context) =>
+                    const ResepSayaScreen(),
+              ),
+            );
+          } else if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfilePage(
+                  onLogout: () async {
+                    Navigator.popUntil(
+                      context,
+                      (route) => route.isFirst,
+                    );
+                  },
+                ),
+              ),
             );
           }
         },
