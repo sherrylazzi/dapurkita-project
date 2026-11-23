@@ -235,7 +235,7 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       // Aksi ketika tombol simpan diklik
-                      print("Resep berhasil disimpan: ${_titleController.text}");
+                      print("Resep berhasil disimpa n: ${_titleController.text}");
                       Navigator.pop(context);
                     }
                   },
